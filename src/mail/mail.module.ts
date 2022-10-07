@@ -15,7 +15,7 @@ import { join } from 'path';
               secure: false,
               requireTLS: true,                       
               auth: {
-                user: 'qstk2615', //process.env.MAIL_USER,
+                user: '', //process.env.MAIL_USER,
                 pass: '', //process.env.MAIL_PASSWORD,
               },
           },
