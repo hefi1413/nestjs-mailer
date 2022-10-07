@@ -3,35 +3,40 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
 import { Global, Module } from '@nestjs/common';
 import { MailService } from './mail.service';
 import { join } from 'path';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 
 @Global()
 @Module({
-    imports: [
-      MailerModule.forRoot({
-          transport: {
-              host: 'smtp.gmail.com', //process.env.MAIL_HOST,
-              port: 587,
-              secure: false,
-              requireTLS: true,                       
-              auth: {
-                user: 'qstk2615', //process.env.MAIL_USER,
-                pass: 'bbzwmdlaugdytkvi', //process.env.MAIL_PASSWORD,
-              },
+  imports: [
+    MailerModule.forRootAsync({
+      //imports: [ConfigModule],      // import module if not enabled globally
+      inject: [ConfigService],
+      useFactory: async (config: ConfigService) => ({
+        transport: {
+          host: config.get<string>('MAIL_HOST'),
+          port: config.get<number>('MAIL_PORT'),
+          secure: false,
+          //requireTLS: true,
+          auth: {
+            user: config.get<string>('MAIL_USER'),
+            pass: config.get<string>('MAIL_PASSWORD'),
           },
-          defaults: {
-              from: 'Teste App',
+        },
+        defaults: {
+          from: `"No Reply" <${config.get<string>('MAIL_FROM')}>`,
+        },
+        template: {
+          dir: join(__dirname, 'templates'),
+          adapter: new HandlebarsAdapter(),
+          options: {
+            strict: true,
           },
-          template: {
-              dir: join(__dirname, './templates'),
-              adapter: new HandlebarsAdapter(),
-              options: {
-                strict: true,
-              },
-          },
+        },
       }),
-    ],
-    providers: [MailService],
-    exports: [MailService],
+    }),
+  ],
+  providers: [MailService],
+  exports: [MailService],
 })
 export class MailModule {}

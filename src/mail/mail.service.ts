@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
 import { User } from 'auth/entities/user.entity';
 
@@ -11,16 +11,22 @@ export class MailService {
         
         const url = `example.com/auth/confirm?token=${token}`;
 
-        await this.mailerService.sendMail({
-            to: user.email,
-            subject: 'Teste App - Confirm your Email',
-            template: './confirmation', 
-            context: { 
-                name: user.name,
-                url,
-            },
-        });
+        try { 
+            await this.mailerService.sendMail({
+                to: user.email,
+                subject: 'Teste App - Confirm your Email',
+                template: './confirmation', 
+                context: { 
+                    name: user.name,
+                    url,
+                },
+            });
+            return `Email sent for receipt ${user.email}`
+        } 
+        catch( error ) {
+            console.log( error );
 
-        return `Email sent for receipt ${user.email}`
+            throw new BadRequestException(`Error sending email for receipt ${user.email}`);
+        }
     }
 }
